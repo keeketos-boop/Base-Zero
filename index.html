@@ -10,29 +10,35 @@
         #header-ui { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 12px; display: flex; justify-content: space-between; border-bottom: 2px solid #00e5ff; z-index: 1000; }
         .stat-box { background: #050505; padding: 8px 18px; border-radius: 4px; border: 1px solid #00e5ff; font-weight: bold; cursor: pointer; }
         #wallet-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #050505; border: 2px solid #00e5ff; padding: 20px; z-index: 2000; text-align: center; width: 85%; box-shadow: 0 0 20px #00e5ff; }
-        .wallet-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: transparent; border: 1px solid #00e5ff; color: #00e5ff; cursor: pointer; }
+        .wallet-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: transparent; border: 1px solid #00e5ff; color: #00e5ff; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .wallet-btn:hover { background: #00e5ff; color: #000; }
     </style>
 </head>
 <body>
     <div id="header-ui">
         <div class="stat-box" onclick="document.getElementById('wallet-modal').style.display='block'">💰 شحن المحفظة</div>
-        <div style="font-weight: bold;">BASE ZERO</div>
+        <div style="font-weight: bold; letter-spacing: 1px;">BASE ZERO</div>
         <div class="stat-box">⏳ العمر: <span id="age">0</span></div>
     </div>
+
     <div id="arena"></div>
+
     <div id="wallet-modal">
         <h3>خزنة القاعدة</h3>
-        <p>اختر وسيلة الشحن:</p>
-        <button class="wallet-btn" onclick="alert('تواصل مع الإدارة لإرسال الرصيد')">محفظة إلكترونية (رصيد/سداد)</button>
-        <button class="wallet-btn" onclick="alert('تواصل لإرسال USDT')">عملات رقمية (Binance)</button>
-        <button style="color:red; background:none; border:none; margin-top:10px;" onclick="document.getElementById('wallet-modal').style.display='none'">إغلاق</button>
+        <p>اختر وسيلة الشحن للتواصل مع الإدارة:</p>
+        <a href="https://wa.me/qr/OVGQUJIEFAP4F1" class="wallet-btn">إرسال رصيد (ليبيانا/مدار/سداد)</a>
+        <a href="https://wa.me/qr/OVGQUJIEFAP4F1" class="wallet-btn">إرسال عملات رقمية (USDT)</a>
+        
+        <button style="color:red; background:none; border:none; margin-top:10px; cursor:pointer;" onclick="document.getElementById('wallet-modal').style.display='none'">إغلاق</button>
     </div>
+
     <script>
         let birth = localStorage.getItem('base_zero_start') || Date.now();
         localStorage.setItem('base_zero_start', birth);
         setInterval(() => {
             let diff = Math.floor((Date.now() - birth) / 1000);
-            document.getElementById('age').innerText = Math.floor(diff/60) + " دقيقة";
+            let mins = Math.floor(diff/60);
+            document.getElementById('age').innerText = mins + " دقيقة";
         }, 1000);
     </script>
 </body>
