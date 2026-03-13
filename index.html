@@ -3,127 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | Self-Evolving Engine</title>
+    <title>Base Zero | Fixed UI - Smart Logic</title>
     <style>
         :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; }
         body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* الساحة مقسمة لـ 3 قطاعات متطورة */
+        /* 1. الساحة (Arena) - مكان البناء */
         #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; display: flex; }
         .zone { flex: 1; border-left: 1px solid rgba(0, 229, 255, 0.05); position: relative; }
-        .zone-info { position: absolute; bottom: 85px; width: 100%; text-align: center; font-size: 9px; color: var(--main); opacity: 0.4; }
 
-        /* الوحدات القابلة للتطوير */
+        /* 2. الوحدات المبنية (تنسيق ثابت وبرمجة متغيرة) */
         .unit { 
             position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.9); 
             padding: 10px; border-radius: 4px; text-align: center; min-width: 100px; z-index: 10;
-            cursor: pointer; transition: 0.5s; animation: evolveIn 0.8s ease;
+            cursor: pointer; transition: 0.2s;
         }
-        @keyframes evolveIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .unit:active { transform: scale(0.95); box-shadow: 0 0 15px var(--main); }
 
-        /* ذكاء المواطن المتطور */
+        /* 3. النقاط الذكية (المواطنين) */
         .bot { 
-            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; 
-            box-shadow: 0 0 15px #fff; transition: all 4s ease-in-out; z-index: 20; 
+            position: absolute; width: 5px; height: 5px; background: #fff; border-radius: 50%; 
+            box-shadow: 0 0 10px #fff; transition: all 4s ease-in-out; z-index: 20; 
         }
         .thought { 
             position: absolute; top: -30px; right: 0; font-size: 9px; 
             color: var(--green); background: #000; padding: 2px 8px; 
-            border: 1px solid var(--green); white-space: nowrap; border-radius: 20px;
+            border: 1px solid var(--green); white-space: nowrap; border-radius: 4px;
         }
 
-        /* واجهة النظام */
-        #nav { position: fixed; top: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; }
-        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 1000; }
-        .btn { padding: 12px 20px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; min-width: 95px; }
-        #level-bar { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--green); transition: 1s; }
+        /* 4. الهيدر (ثابت) */
+        #nav { position: fixed; top: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; }
+        
+        /* 5. الأزرار (مكانها ثابت 100% زي ما طلبت) */
+        #dock { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 12px; z-index: 1000; }
+        .btn { padding: 14px 25px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; min-width: 100px; font-size: 15px; }
+
+        /* الشاشات التفاعلية (تفتح خلف الأزرار) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--main); }
     </style>
 </head>
 <body>
 
+    <div id="p-login" class="overlay"><h2>🔐 دخول القاعدة</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
+    <div id="p-dep" class="overlay"><h2>💰 محفظة الإيداع</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
+    <div id="p-game" class="overlay"><h2>🎮 صالة الألعاب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
+    <div id="p-out" class="overlay"><h2>💸 نظام السحب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
+
     <div id="nav">
-        <div style="color:var(--main); font-weight:900;">[ ENGINE_EVO_01 ]</div>
-        <div style="letter-spacing:4px; font-weight:900;">BASE ZERO <span id="base-lv" style="color:var(--gold)">LV.1</span></div>
-        <div id="status" style="color:var(--green); font-size:10px;">AUTONOMOUS_MODE</div>
-        <div id="level-bar" style="width: 0%"></div>
+        <div onclick="ui('p-login')" style="color:var(--main); font-weight:900; cursor:pointer;">[ LOGIN ]</div>
+        <div style="letter-spacing:5px; font-weight:900;">BASE ZERO</div>
+        <div id="ai-log" style="color:var(--green); font-size:10px;">LOG: ACTIVE</div>
     </div>
 
     <div id="arena">
-        <div class="zone" id="z1"><div class="zone-info">SECTOR: CORE</div></div>
-        <div class="zone" id="z2"><div class="zone-info">SECTOR: NETWORK</div></div>
-        <div class="zone" id="z3"><div class="zone-info">SECTOR: DEFENSE</div></div>
+        <div class="zone" id="z1"></div>
+        <div class="zone" id="z2"></div>
+        <div class="zone" id="z3"></div>
     </div>
 
     <div id="dock">
-        <button class="btn" style="background:var(--main); color:#000;">إيداع</button>
-        <button class="btn" style="background:var(--gold); color:#000;">ألعاب</button>
-        <button class="btn" style="background:var(--pink); color:#fff;">سحب</button>
+        <button class="btn" onclick="ui('p-dep')" style="background:var(--main); color:#000;">إيداع</button>
+        <button class="btn" onclick="ui('p-game')" style="background:var(--gold); color:#000;">ألعاب</button>
+        <button class="btn" onclick="ui('p-out')" style="background:var(--pink); color:#fff;">سحب</button>
     </div>
 
     <script>
-        let exp = 0;
-        let level = 1;
-        const zones = [document.getElementById('z1'), document.getElementById('z2'), document.getElementById('z3')];
-        
-        // محرك توليد الأفكار المتطورة
-        const verbs = ["تحديث", "بناء", "تشفير", "مزامنة", "تأمين", "توسيع"];
-        const nouns = ["السيرفر", "المطار", "المنظومة", "القاعدة", "البروتوكول"];
-
-        function getEvolvedIdea() {
-            let prefix = level > 5 ? "متطور: " : "";
-            return prefix + verbs[Math.floor(Math.random()*verbs.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)];
+        // 1. برمجة التفاعل (Navigation Logic)
+        function ui(id) {
+            document.querySelectorAll('.overlay').forEach(p => p.style.display = 'none');
+            if(id !== 'close') document.getElementById(id).style.display = 'flex';
         }
 
-        function spawnBot(zoneIdx) {
-            const z = zones[zoneIdx];
-            const bot = document.createElement('div');
-            bot.className = 'bot';
-            bot.style.left = "50%"; bot.style.top = "50%";
-            bot.innerHTML = `<div class="thought">جاري التشغيل...</div>`;
-            z.appendChild(bot);
+        const zones = [document.getElementById('z1'), document.getElementById('z2'), document.getElementById('z3')];
+        
+        // 2. برمجة توليد الأفكار (Dynamic AI Engine)
+        const verbs = ["تأمين", "تشفير", "تطوير", "ربط", "مزامنة"];
+        const objects = ["المطار", "البيانات", "المدار", "السيستم", "المحفظة"];
+
+        function getSmartIdea() {
+            return verbs[Math.floor(Math.random()*verbs.length)] + " " + objects[Math.floor(Math.random()*objects.length)];
+        }
+
+        // 3. برمجة حركة وتفكير المواطن
+        function initBot(zIdx) {
+            const container = zones[zIdx];
+            const b = document.createElement('div');
+            b.className = 'bot';
+            b.style.left = "50%"; b.style.top = "50%";
+            b.innerHTML = `<div class="thought">Initializing...</div>`;
+            container.appendChild(b);
 
             setInterval(() => {
                 const x = Math.random() * 80 + 10 + "%";
                 const y = Math.random() * 60 + 20 + "%";
-                bot.style.left = x; bot.style.top = y;
+                b.style.left = x; b.style.top = y;
 
-                const idea = getEvolvedIdea();
-                bot.querySelector('.thought').innerText = idea;
+                const idea = getSmartIdea();
+                b.querySelector('.thought').innerText = idea;
 
-                // البناء يزود الخبرة (EXP) ويطور السيستم
+                // البناء التلقائي المتطور
                 if(Math.random() > 0.6) {
-                    spawnUnit(z, x, y, idea);
-                    updateSystem();
+                    createUnit(container, x, y, idea);
                 }
-            }, 5000 + Math.random() * 2000);
+            }, 6000);
         }
 
-        function spawnUnit(z, x, y, idea) {
+        function createUnit(container, x, y, idea) {
             const u = document.createElement('div');
             u.className = 'unit';
             u.style.left = x; u.style.top = y;
             const color = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"][Math.floor(Math.random()*4)];
             u.style.borderColor = color;
             
-            u.innerHTML = `<b style="color:${color}; font-size:11px;">${idea}</b><br><small style="font-size:7px; opacity:0.6;">EVO_${Math.floor(Math.random()*9999)}</small>`;
-            z.appendChild(u);
+            // عند الضغط: برمجة الوحدة تتغير وتحدث اللوق
+            u.onclick = function(e) {
+                e.stopPropagation();
+                const fresh = getSmartIdea();
+                this.querySelector('b').innerText = fresh;
+                document.getElementById('ai-log').innerText = "AI_UPDATE: " + fresh;
+            };
 
-            if(z.getElementsByClassName('unit').length > 5) z.removeChild(z.getElementsByClassName('unit')[0]);
-        }
+            u.innerHTML = `<b style="color:${color}; font-size:10px;">${idea}</b><br><small style="font-size:7px; opacity:0.6;">SYSTEM_NODE</small>`;
+            container.appendChild(u);
 
-        function updateSystem() {
-            exp += 5;
-            if(exp >= 100) {
-                exp = 0;
-                level++;
-                document.getElementById('base-lv').innerText = "LV." + level;
-                document.getElementById('status').innerText = "SYSTEM_UPGRADED_TO_LV" + level;
+            if(container.getElementsByClassName('unit').length > 4) {
+                container.removeChild(container.getElementsByClassName('unit')[0]);
             }
-            document.getElementById('level-bar').style.width = exp + "%";
         }
 
-        // إطلاق بوتات في كل منطقة لتبدأ التطوير التلقائي
-        for(let i=0; i<3; i++) spawnBot(i);
+        // إطلاق المحرك في كل المناطق
+        for(let i=0; i<3; i++) initBot(i);
     </script>
 </body>
 </html>
