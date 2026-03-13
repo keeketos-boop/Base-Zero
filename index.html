@@ -3,72 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | Fixed UI - Smart Logic</title>
+    <title>Base Zero | Ultimate Engine</title>
     <style>
-        :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; }
-        body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; --bg: #000; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* 1. الساحة (Arena) - مكان البناء */
+        /* الساحة المقسمة لـ 3 مناطق برمجية */
         #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; display: flex; }
-        .zone { flex: 1; border-left: 1px solid rgba(0, 229, 255, 0.05); position: relative; }
+        .zone { flex: 1; border-left: 1px solid rgba(0, 229, 255, 0.08); position: relative; overflow: hidden; }
+        .zone::before { content: attr(data-name); position: absolute; bottom: 90px; width: 100%; text-align: center; font-size: 10px; color: var(--main); opacity: 0.2; letter-spacing: 5px; }
 
-        /* 2. الوحدات المبنية (تنسيق ثابت وبرمجة متغيرة) */
+        /* الوحدات (المباني) المتطورة */
         .unit { 
             position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.9); 
-            padding: 10px; border-radius: 4px; text-align: center; min-width: 100px; z-index: 10;
-            cursor: pointer; transition: 0.2s;
+            padding: 10px; border-radius: 4px; text-align: center; min-width: 110px; z-index: 10;
+            cursor: pointer; transition: 0.3s; animation: spawn 0.5s ease-out;
         }
-        .unit:active { transform: scale(0.95); box-shadow: 0 0 15px var(--main); }
+        @keyframes spawn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .unit:hover { box-shadow: 0 0 15px var(--main); }
 
-        /* 3. النقاط الذكية (المواطنين) */
+        /* المواطنين (النقاط الذكية) */
         .bot { 
-            position: absolute; width: 5px; height: 5px; background: #fff; border-radius: 50%; 
-            box-shadow: 0 0 10px #fff; transition: all 4s ease-in-out; z-index: 20; 
+            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; 
+            box-shadow: 0 0 12px #fff; transition: all 4s linear; z-index: 20; 
         }
-        .thought { 
-            position: absolute; top: -30px; right: 0; font-size: 9px; 
-            color: var(--green); background: #000; padding: 2px 8px; 
-            border: 1px solid var(--green); white-space: nowrap; border-radius: 4px;
+        .bubble { 
+            position: absolute; top: -35px; right: 0; font-size: 9px; 
+            color: var(--green); background: rgba(0,0,0,0.9); padding: 4px 10px; 
+            border: 1px solid var(--green); white-space: nowrap; border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,255,68,0.3);
         }
 
-        /* 4. الهيدر (ثابت) */
-        #nav { position: fixed; top: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; }
-        
-        /* 5. الأزرار (مكانها ثابت 100% زي ما طلبت) */
-        #dock { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 12px; z-index: 1000; }
-        .btn { padding: 14px 25px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; min-width: 100px; font-size: 15px; }
+        /* الهيكل الثابت (واجهة المستخدم) */
+        #nav { position: fixed; top: 0; width: 100%; padding: 18px; background: rgba(0,0,0,0.96); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; }
+        #dock { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 1000; }
+        .btn { padding: 15px 30px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; min-width: 110px; font-size: 16px; transition: 0.3s; color: #000; }
+        .btn:active { transform: translateY(3px); }
 
-        /* الشاشات التفاعلية (تفتح خلف الأزرار) */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--main); }
+        /* شاشات الأنظمة (Overlays) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; border: 4px solid var(--main); }
     </style>
 </head>
 <body>
 
-    <div id="p-login" class="overlay"><h2>🔐 دخول القاعدة</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
-    <div id="p-dep" class="overlay"><h2>💰 محفظة الإيداع</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
-    <div id="p-game" class="overlay"><h2>🎮 صالة الألعاب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
-    <div id="p-out" class="overlay"><h2>💸 نظام السحب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">رجوع</button></div>
+    <div id="p-login" class="overlay"><h2>👤 دخول قاعدة البيانات</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">عودة للنظام</button></div>
+    <div id="p-dep" class="overlay"><h2>💰 بوابة الإيداع الرقمي</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">عودة للنظام</button></div>
+    <div id="p-game" class="overlay"><h2>🎮 مركز الألعاب (لودو زيرو)</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">عودة للنظام</button></div>
+    <div id="p-out" class="overlay"><h2>💸 نظام السحب الفوري</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">عودة للنظام</button></div>
 
     <div id="nav">
-        <div onclick="ui('p-login')" style="color:var(--main); font-weight:900; cursor:pointer;">[ LOGIN ]</div>
-        <div style="letter-spacing:5px; font-weight:900;">BASE ZERO</div>
-        <div id="ai-log" style="color:var(--green); font-size:10px;">LOG: ACTIVE</div>
+        <div onclick="ui('p-login')" style="color:var(--main); font-weight:900; cursor:pointer;">[ ADMIN_ACCESS ]</div>
+        <div style="letter-spacing:6px; font-weight:900; text-shadow: 0 0 10px var(--main);">BASE ZERO</div>
+        <div id="sys-log" style="color:var(--green); font-size:10px;">CORE: ONLINE</div>
     </div>
 
     <div id="arena">
-        <div class="zone" id="z1"></div>
-        <div class="zone" id="z2"></div>
-        <div class="zone" id="z3"></div>
+        <div class="zone" id="z1" data-name="AIRPORT_SECTOR"></div>
+        <div class="zone" id="z2" data-name="DATA_CENTER"></div>
+        <div class="zone" id="z3" data-name="SECURITY_HUB"></div>
     </div>
 
     <div id="dock">
-        <button class="btn" onclick="ui('p-dep')" style="background:var(--main); color:#000;">إيداع</button>
-        <button class="btn" onclick="ui('p-game')" style="background:var(--gold); color:#000;">ألعاب</button>
+        <button class="btn" onclick="ui('p-dep')" style="background:var(--main);">إيداع</button>
+        <button class="btn" onclick="ui('p-game')" style="background:var(--gold);">ألعاب</button>
         <button class="btn" onclick="ui('p-out')" style="background:var(--pink); color:#fff;">سحب</button>
     </div>
 
     <script>
-        // 1. برمجة التفاعل (Navigation Logic)
+        // 1. برمجة التفاعل الثابت
         function ui(id) {
             document.querySelectorAll('.overlay').forEach(p => p.style.display = 'none');
             if(id !== 'close') document.getElementById(id).style.display = 'flex';
@@ -76,63 +78,73 @@
 
         const zones = [document.getElementById('z1'), document.getElementById('z2'), document.getElementById('z3')];
         
-        // 2. برمجة توليد الأفكار (Dynamic AI Engine)
-        const verbs = ["تأمين", "تشفير", "تطوير", "ربط", "مزامنة"];
-        const objects = ["المطار", "البيانات", "المدار", "السيستم", "المحفظة"];
+        // 2. محرك الأفكار المتطور (Advanced AI Engine)
+        const v = ["تحسين", "تشفير", "تأمين", "ربط", "مراقبة", "بناء"];
+        const o = ["المطار", "المحفظة", "السيرفر", "المنظومة", "الشبكة", "القاعدة"];
+        const s = ["بنجاح", "مؤمن", "جاري العمل", "ليفل 5", "نشط"];
 
-        function getSmartIdea() {
-            return verbs[Math.floor(Math.random()*verbs.length)] + " " + objects[Math.floor(Math.random()*objects.length)];
+        function generateComplexIdea() {
+            return v[Math.floor(Math.random()*v.length)] + " " + 
+                   o[Math.floor(Math.random()*o.length)] + " - " + 
+                   s[Math.floor(Math.random()*s.length)];
         }
 
-        // 3. برمجة حركة وتفكير المواطن
-        function initBot(zIdx) {
+        // 3. برمجة حياة البوتات (Bots Lifecycle)
+        function initAI(zIdx) {
             const container = zones[zIdx];
-            const b = document.createElement('div');
-            b.className = 'bot';
-            b.style.left = "50%"; b.style.top = "50%";
-            b.innerHTML = `<div class="thought">Initializing...</div>`;
-            container.appendChild(b);
+            const bot = document.createElement('div');
+            bot.className = 'bot';
+            bot.style.left = "50%"; bot.style.top = "50%";
+            bot.innerHTML = `<div class="bubble">Syncing...</div>`;
+            container.appendChild(bot);
 
             setInterval(() => {
-                const x = Math.random() * 80 + 10 + "%";
-                const y = Math.random() * 60 + 20 + "%";
-                b.style.left = x; b.style.top = y;
+                // حركة ذكية
+                const x = Math.random() * 85 + 5 + "%";
+                const y = Math.random() * 70 + 15 + "%";
+                bot.style.left = x; bot.style.top = y;
 
-                const idea = getSmartIdea();
-                b.querySelector('.thought').innerText = idea;
+                const idea = generateComplexIdea();
+                bot.querySelector('.bubble').innerText = idea;
 
-                // البناء التلقائي المتطور
-                if(Math.random() > 0.6) {
-                    createUnit(container, x, y, idea);
+                // البناء التلقائي المتفاعل
+                if(Math.random() > 0.65) {
+                    spawnStructure(container, x, y, idea);
                 }
-            }, 6000);
+            }, 6000 + (Math.random()*2000));
         }
 
-        function createUnit(container, x, y, idea) {
+        function spawnStructure(container, x, y, idea) {
             const u = document.createElement('div');
             u.className = 'unit';
             u.style.left = x; u.style.top = y;
-            const color = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"][Math.floor(Math.random()*4)];
+            const colors = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"];
+            const color = colors[Math.floor(Math.random()*4)];
             u.style.borderColor = color;
             
-            // عند الضغط: برمجة الوحدة تتغير وتحدث اللوق
             u.onclick = function(e) {
                 e.stopPropagation();
-                const fresh = getSmartIdea();
-                this.querySelector('b').innerText = fresh;
-                document.getElementById('ai-log').innerText = "AI_UPDATE: " + fresh;
+                const fresh = generateComplexIdea();
+                this.querySelector('b').innerText = fresh.split(' - ')[0];
+                document.getElementById('sys-log').innerText = "AI_UPDATE: " + fresh;
+                this.style.transform = "scale(1.1)";
+                setTimeout(() => this.style.transform = "scale(1)", 2000);
             };
 
-            u.innerHTML = `<b style="color:${color}; font-size:10px;">${idea}</b><br><small style="font-size:7px; opacity:0.6;">SYSTEM_NODE</small>`;
+            u.innerHTML = `
+                <b style="color:${color}; font-size:11px;">${idea.split(' - ')[0]}</b><br>
+                <small style="font-size:7px; opacity:0.6; color:#fff;">LOG: ${idea.split(' - ')[1]}</small>
+            `;
             container.appendChild(u);
 
-            if(container.getElementsByClassName('unit').length > 4) {
+            // الحفاظ على الأداء (حذف القديم تلقائياً)
+            if(container.getElementsByClassName('unit').length > 5) {
                 container.removeChild(container.getElementsByClassName('unit')[0]);
             }
         }
 
-        // إطلاق المحرك في كل المناطق
-        for(let i=0; i<3; i++) initBot(i);
+        // تشغيل المحرك في كل المناطق (3 بوتات مستقلة)
+        for(let i=0; i<3; i++) initAI(i);
     </script>
 </body>
 </html>
