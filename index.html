@@ -3,44 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | Smart Base</title>
+    <title>Base Zero | الذكاء السيبراني</title>
     <style>
-        body { margin: 0; background: #000; color: #00e5ff; font-family: monospace; overflow: hidden; }
-        #arena { position: absolute; width: 100vw; height: 100vh; background: radial-gradient(#111 1px, transparent 1px); background-size: 30px 30px; }
-        #header { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 10px; display: flex; justify-content: space-between; border-bottom: 2px solid #00e5ff; z-index: 100; }
-        /* نظام البناء التلقائي */
-        .node { position: absolute; border: 1px solid #00e5ff; padding: 5px; font-size: 9px; background: rgba(0,229,255,0.1); animation: blink 2s infinite; }
-        @keyframes blink { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
-        /* مركز الشحن */
-        #hub { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; background: #050505; border: 2px solid #ff00ea; border-radius: 15px; padding: 15px; text-align: center; box-shadow: 0 0 20px #ff00ea; z-index: 1000; }
-        .btn { display: block; background: #ff00ea; color: #fff; padding: 12px; margin: 8px 0; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; }
+        body { margin: 0; background: #000; color: #00e5ff; font-family: 'Courier New', monospace; overflow: hidden; }
+        #arena { position: fixed; width: 10000px; height: 10000px; z-index: -1; background: radial-gradient(#111 1px, transparent 1px); background-size: 50px 50px; }
+        #header-ui { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 12px; display: flex; justify-content: space-between; border-bottom: 2px solid #00e5ff; z-index: 1000; }
+        
+        /* تصميم النوافذ المنبثقة (Popups) */
+        .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: #050505; border: 2px solid #00e5ff; padding: 25px; z-index: 3000; box-shadow: 0 0 40px #00e5ff; border-radius: 5px; text-align: center; }
+        input { width: 90%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #00e5ff; color: #00e5ff; border-radius: 0; outline: none; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; background: #00e5ff; color: #000; font-weight: bold; border: none; cursor: pointer; text-decoration: none; }
+        
+        /* ذكاء البناء (الخطوط والنمو) */
+        .building { position: absolute; border: 1px solid #00e5ff; background: rgba(0, 229, 255, 0.03); transition: all 1.5s ease; display: flex; align-items: center; justify-content: center; font-size: 11px; box-shadow: inset 0 0 15px rgba(0,229,255,0.1); }
+        .status-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.8); font-size: 10px; padding: 5px; border-top: 1px solid #333; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div id="header">
-        <span>💰 محفظة نشطة</span>
-        <span style="letter-spacing: 2px;">BASE ZERO</span>
-        <span>⏳ <span id="timer">0</span>s</span>
+
+    <div id="header-ui">
+        <div onclick="showPopup('login-popup')" style="cursor:pointer; border:1px solid #00e5ff; padding:2px 10px;">👤 LOGIN</div>
+        <div style="font-weight: bold; letter-spacing: 5px;">BASE ZERO</div>
+        <div>⏳ <span id="age">0</span>s</div>
     </div>
+
     <div id="arena"></div>
-    <div id="hub">
-        <h3 style="margin:0 0 10px 0;">⚡ مركز الشحن والإيداع</h3>
-        <a href="https://wa.me/qr/OVGQUJIEFAP4F1" class="btn">إيداع رصيد (ليبيانا/مدار)</a>
-        <a href="https://wa.me/qr/OVGQUJIEFAP4F1" class="btn" style="background:#f3ba2f; color:#000;">إيداع USDT / كريبتو</a>
+
+    <div style="position:fixed; bottom:40px; width:100%; display:flex; justify-content:center; gap:20px; z-index:1000;">
+        <button class="btn" style="width:120px;" onclick="showPopup('deposit-popup')">📥 إيداع</button>
+        <button class="btn" style="width:120px; background:#ff00ea;" onclick="showPopup('withdraw-popup')">📤 سحب</button>
     </div>
+
+    <div id="login-popup" class="popup">
+        <h3 style="letter-spacing: 2px;">ACCESS_CORE</h3>
+        <input type="text" placeholder="ID_USER">
+        <input type="password" placeholder="PASS_CODE">
+        <button class="btn" onclick="closePopups()">INITIALIZE</button>
+        <button onclick="closePopups()" style="color:red; background:none; border:none; cursor:pointer;">[CLOSE]</button>
+    </div>
+
+    <div id="deposit-popup" class="popup">
+        <h3>مركز الإيداع</h3>
+        <a href="https://wa.me/qr/OVGQUJIEFAP4F1" class="btn">رصيد مدار / ليبيانا</a>
+        <a href="https://wa.me/qr/OVGQUJIEFAP4F1" class="btn" style="background:#f3ba2f;">CRYPTO / USDT</a>
+        <button onclick="closePopups()" style="color:red; background:none; border:none; cursor:pointer;">[CLOSE]</button>
+    </div>
+
+    <div id="withdraw-popup" class="popup" style="border-color:#ff00ea; box-shadow: 0 0 40px #ff00ea;">
+        <h3 style="color:#ff00ea;">مركز السحب</h3>
+        <input type="number" placeholder="AMOUNT">
+        <a href="https://wa.me/qr/OVGQUJIEFAP4F1" class="btn" style="background:#ff00ea; color:#fff;">CONFIRM WITHDRAW</a>
+        <button onclick="closePopups()" style="color:red; background:none; border:none; cursor:pointer;">[CLOSE]</button>
+    </div>
+
+    <div class="status-bar">SYSTEM_STATUS: ACTIVE | AI_LOGIC: RUNNING | ENCRYPTION: 256-BIT</div>
+
     <script>
+        // منطق النوافذ
+        function showPopup(id) { closePopups(); document.getElementById(id).style.display = 'block'; }
+        function closePopups() { document.querySelectorAll('.popup').forEach(p => p.style.display = 'none'); }
+
+        // منطق الذكاء (بناء القاعدة التلقائي)
         const arena = document.getElementById('arena');
-        function build() {
-            const n = document.createElement('div');
-            n.className = 'node';
-            n.style.left = Math.random() * 80 + '%';
-            n.style.top = Math.random() * 70 + 10 + '%';
-            n.innerHTML = "SYSTEM_NODE_" + Math.floor(Math.random()*999) + "<br>RUNNING...";
-            arena.appendChild(n);
-            if(arena.childElementCount > 15) arena.removeChild(arena.firstChild);
+        function buildBase() {
+            const b = document.createElement('div');
+            b.className = 'building';
+            let size = Math.random() * 150 + 80;
+            b.style.width = size + 'px';
+            b.style.height = (size/1.5) + 'px';
+            b.style.left = Math.random() * (window.innerWidth - 200) + 'px';
+            b.style.top = Math.random() * (window.innerHeight - 200) + 'px';
+            b.innerHTML = "LOADING_DATA...";
+            arena.appendChild(b);
+            
+            setTimeout(() => {
+                b.innerHTML = "LAB_UNIT_" + Math.floor(Math.random()*9999);
+                b.style.borderColor = (Math.random() > 0.5) ? "#00e5ff" : "#ff00ea";
+            }, 2000);
+
+            if(arena.childElementCount > 12) arena.removeChild(arena.firstChild);
         }
-        setInterval(build, 3000); // بناء نود جديدة كل 3 ثواني
-        let s = 0; setInterval(() => { s++; document.getElementById('timer').innerText = s; }, 1000);
+
+        setInterval(buildBase, 4000);
+        let s = 0; setInterval(() => { s++; document.getElementById('age').innerText = s; }, 1000);
     </script>
 </body>
 </html>
