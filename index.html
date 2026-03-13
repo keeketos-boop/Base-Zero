@@ -3,55 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | AI Idea Engine</title>
+    <title>Base Zero | Self-Evolving Engine</title>
     <style>
         :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; }
         body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* تقسيم المناطق الخلفية */
+        /* الساحة مقسمة لـ 3 قطاعات متطورة */
         #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; display: flex; }
-        .zone { 
-            flex: 1; border-right: 1px border-style: dashed; border-color: rgba(255,255,255,0.05); 
-            position: relative; overflow: hidden; 
-        }
-        .zone-label { position: absolute; bottom: 80px; width: 100%; text-align: center; font-size: 10px; color: rgba(255,255,255,0.2); letter-spacing: 2px; }
+        .zone { flex: 1; border-left: 1px solid rgba(0, 229, 255, 0.05); position: relative; }
+        .zone-info { position: absolute; bottom: 85px; width: 100%; text-align: center; font-size: 9px; color: var(--main); opacity: 0.4; }
 
-        /* الوحدات المبنية */
-        .building { 
+        /* الوحدات القابلة للتطوير */
+        .unit { 
             position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.9); 
             padding: 10px; border-radius: 4px; text-align: center; min-width: 100px; z-index: 10;
-            cursor: pointer; animation: flash 0.5s;
+            cursor: pointer; transition: 0.5s; animation: evolveIn 0.8s ease;
         }
-        @keyframes flash { from { border-color: #fff; } to { border-color: inherit; } }
+        @keyframes evolveIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* المواطنين المبرمجين */
-        .citizen { 
+        /* ذكاء المواطن المتطور */
+        .bot { 
             position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; 
-            box-shadow: 0 0 10px #fff; transition: all 3s ease-in-out; z-index: 20; 
+            box-shadow: 0 0 15px #fff; transition: all 4s ease-in-out; z-index: 20; 
         }
         .thought { 
             position: absolute; top: -30px; right: 0; font-size: 9px; 
-            color: var(--green); background: #000; padding: 3px 8px; 
-            border: 1px solid var(--green); white-space: nowrap; border-radius: 2px;
+            color: var(--green); background: #000; padding: 2px 8px; 
+            border: 1px solid var(--green); white-space: nowrap; border-radius: 20px;
         }
 
+        /* واجهة النظام */
         #nav { position: fixed; top: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; }
         #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 1000; }
         .btn { padding: 12px 20px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; min-width: 95px; }
+        #level-bar { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--green); transition: 1s; }
     </style>
 </head>
 <body>
 
     <div id="nav">
-        <div style="color:var(--main); font-weight:900;">[ محرك الأفكار ]</div>
-        <div style="letter-spacing:4px; font-weight:900;">BASE ZERO</div>
-        <div id="ai-log" style="color:var(--green); font-size:10px;">GENERATING_IDEAS...</div>
+        <div style="color:var(--main); font-weight:900;">[ ENGINE_EVO_01 ]</div>
+        <div style="letter-spacing:4px; font-weight:900;">BASE ZERO <span id="base-lv" style="color:var(--gold)">LV.1</span></div>
+        <div id="status" style="color:var(--green); font-size:10px;">AUTONOMOUS_MODE</div>
+        <div id="level-bar" style="width: 0%"></div>
     </div>
 
     <div id="arena">
-        <div class="zone" id="zone-1"><div class="zone-label">REGION_01: SERVICES</div></div>
-        <div class="zone" id="zone-2"><div class="zone-label">REGION_02: HUB</div></div>
-        <div class="zone" id="zone-3"><div class="zone-label">REGION_03: LABS</div></div>
+        <div class="zone" id="z1"><div class="zone-info">SECTOR: CORE</div></div>
+        <div class="zone" id="z2"><div class="zone-info">SECTOR: NETWORK</div></div>
+        <div class="zone" id="z3"><div class="zone-info">SECTOR: DEFENSE</div></div>
     </div>
 
     <div id="dock">
@@ -61,70 +61,69 @@
     </div>
 
     <script>
-        const zones = [document.getElementById('zone-1'), document.getElementById('zone-2'), document.getElementById('zone-3')];
+        let exp = 0;
+        let level = 1;
+        const zones = [document.getElementById('z1'), document.getElementById('z2'), document.getElementById('z3')];
         
-        // محرك توليد الأفكار - مولد حقيقي
-        const aiActions = ["تحديث", "تشفير", "بناء", "فحص", "تأمين", "ربط"];
-        const aiTargets = ["نظام المدار", "قاعدة البيانات", "محفظة زيرو", "سيرفر الألعاب", "بوابة السحب"];
-        const aiStatus = ["نشط", "قيد المعالجة", "مكتمل", "انتظار الأوامر"];
+        // محرك توليد الأفكار المتطورة
+        const verbs = ["تحديث", "بناء", "تشفير", "مزامنة", "تأمين", "توسيع"];
+        const nouns = ["السيرفر", "المطار", "المنظومة", "القاعدة", "البروتوكول"];
 
-        function generateIdea() {
-            return aiActions[Math.floor(Math.random()*aiActions.length)] + " " + 
-                   aiTargets[Math.floor(Math.random()*aiTargets.length)] + " - " +
-                   aiStatus[Math.floor(Math.random()*aiStatus.length)];
+        function getEvolvedIdea() {
+            let prefix = level > 5 ? "متطور: " : "";
+            return prefix + verbs[Math.floor(Math.random()*verbs.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)];
         }
 
-        function spawnAI() {
-            const zIndex = Math.floor(Math.random()*3);
-            const targetZone = zones[zIndex];
-            
-            const c = document.createElement('div');
-            c.className = 'citizen';
-            c.style.left = Math.random() * 80 + '%';
-            c.style.top = Math.random() * 60 + 20 + '%';
-            
-            const currentIdea = generateIdea();
-            c.innerHTML = `<div class="thought">${currentIdea}</div>`;
-            targetZone.appendChild(c);
+        function spawnBot(zoneIdx) {
+            const z = zones[zoneIdx];
+            const bot = document.createElement('div');
+            bot.className = 'bot';
+            bot.style.left = "50%"; bot.style.top = "50%";
+            bot.innerHTML = `<div class="thought">جاري التشغيل...</div>`;
+            z.appendChild(bot);
 
-            // الحركة داخل المنطقة المحددة فقط
             setInterval(() => {
-                c.style.left = Math.random() * 80 + '%';
-                c.style.top = Math.random() * 60 + 20 + '%';
-                
-                // تحديث الفكرة عند كل حركة
-                if(Math.random() > 0.5) {
-                    const newIdea = generateIdea();
-                    c.querySelector('.thought').innerText = newIdea;
-                    
-                    // بناء مبنى بناءً على الفكرة
-                    if(Math.random() > 0.7) buildInZone(targetZone, c.style.left, c.style.top, newIdea);
+                const x = Math.random() * 80 + 10 + "%";
+                const y = Math.random() * 60 + 20 + "%";
+                bot.style.left = x; bot.style.top = y;
+
+                const idea = getEvolvedIdea();
+                bot.querySelector('.thought').innerText = idea;
+
+                // البناء يزود الخبرة (EXP) ويطور السيستم
+                if(Math.random() > 0.6) {
+                    spawnUnit(z, x, y, idea);
+                    updateSystem();
                 }
-            }, 5000);
+            }, 5000 + Math.random() * 2000);
         }
 
-        function buildInZone(zone, x, y, idea) {
-            const b = document.createElement('div');
-            b.className = 'building';
-            b.style.left = x; b.style.top = y;
-            const colors = [ "#00e5ff", "#00ff44", "#ffff00", "#ff00ea"];
-            const color = colors[Math.floor(Math.random()*4)];
-            b.style.borderColor = color;
+        function spawnUnit(z, x, y, idea) {
+            const u = document.createElement('div');
+            u.className = 'unit';
+            u.style.left = x; u.style.top = y;
+            const color = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"][Math.floor(Math.random()*4)];
+            u.style.borderColor = color;
             
-            // عند الضغط على المبنى، يولد فكرة جديدة فوراً
-            b.onclick = function() {
-                this.querySelector('.b-title').innerText = generateIdea().split(' - ')[0];
-                document.getElementById('ai-log').innerText = "AI_UPDATE: " + generateIdea();
-            };
+            u.innerHTML = `<b style="color:${color}; font-size:11px;">${idea}</b><br><small style="font-size:7px; opacity:0.6;">EVO_${Math.floor(Math.random()*9999)}</small>`;
+            z.appendChild(u);
 
-            b.innerHTML = `<span class="b-title" style="color:${color}">${idea.split(' - ')[0]}</span><br><small style="font-size:7px; opacity:0.5;">ZONE_DATA_ID</small>`;
-            zone.appendChild(b);
-
-            if(zone.getElementsByClassName('building').length > 5) zone.removeChild(zone.getElementsByClassName('building')[0]);
+            if(z.getElementsByClassName('unit').length > 5) z.removeChild(z.getElementsByClassName('unit')[0]);
         }
 
-        // إطلاق الذكاء في المناطق الثلاثة
-        for(let i=0; i<6; i++) spawnAI();
+        function updateSystem() {
+            exp += 5;
+            if(exp >= 100) {
+                exp = 0;
+                level++;
+                document.getElementById('base-lv').innerText = "LV." + level;
+                document.getElementById('status').innerText = "SYSTEM_UPGRADED_TO_LV" + level;
+            }
+            document.getElementById('level-bar').style.width = exp + "%";
+        }
+
+        // إطلاق بوتات في كل منطقة لتبدأ التطوير التلقائي
+        for(let i=0; i<3; i++) spawnBot(i);
     </script>
 </body>
 </html>
