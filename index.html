@@ -3,48 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | AI Builders</title>
+    <title>Base Zero | AI Identity</title>
     <style>
-        :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; --road: rgba(0, 229, 255, 0.05); }
+        :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; }
         body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background-image: radial-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px); background-size: 60px 60px; }
         
-        /* الشوارع الرقمية */
-        #arena { 
-            position: fixed; width: 100vw; height: 100vh; z-index: -1; 
-            background-image: linear-gradient(var(--road) 1px, transparent 1px), linear-gradient(90deg, var(--road) 1px, transparent 1px);
-            background-size: 100px 100px; /* حجم الشارع */
-        }
-        
-        /* المباني اللي يبنوها الناس */
-        .building { 
-            position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.8); 
-            padding: 10px; border-radius: 4px; text-align: center; z-index: 10;
-            animation: appear 1s ease-out;
-        }
-        @keyframes appear { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+        .building { position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.8); padding: 8px; border-radius: 6px; text-align: center; z-index: 10; transition: 1.5s; }
+        .b-title { font-size: 11px; font-weight: bold; display: block; }
 
-        /* الأشخاص (المهندسين) */
-        .builder {
-            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 10px #fff; transition: all 3s ease-in-out; z-index: 20;
-        }
-        .thought {
-            position: absolute; top: -30px; right: 0; font-size: 10px; 
-            color: var(--gold); white-space: nowrap; background: rgba(0,0,0,0.8);
-            padding: 2px 8px; border: 1px solid var(--gold); border-radius: 4px;
-        }
+        .citizen { position: absolute; width: 5px; height: 5px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px #fff; transition: all 4s ease-in-out; z-index: 20; }
+        .thought { position: absolute; top: -25px; right: 0; font-size: 9px; color: var(--green); white-space: nowrap; background: rgba(0,0,0,0.8); padding: 2px 6px; border-right: 2px solid var(--green); }
 
         #nav { position: fixed; top: 0; width: 100%; padding: 12px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; }
-        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 1000; }
-        .btn { padding: 12px 20px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
+        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 8px; z-index: 1000; }
+        .btn { padding: 12px 18px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; min-width: 90px; }
     </style>
 </head>
 <body>
 
     <div id="nav">
-        <div style="color:var(--main); font-weight:bold;">[ 🛠️ وضع البناء الحي ]</div>
+        <div style="color:var(--main); font-weight:bold;">[ 🤖 هوية مستقلة ]</div>
         <div style="letter-spacing:4px; font-weight:900;">BASE ZERO</div>
-        <div style="font-size:10px; color:var(--green);">PEOPLE_ARE_BUILDING...</div>
+        <div id="status" style="font-size:10px; color:var(--green);">AI_NAMING_ACTIVE</div>
     </div>
 
     <div id="arena"></div>
@@ -57,61 +38,59 @@
 
     <script>
         const arena = document.getElementById('arena');
-        const names = ["سارة", "محمد", "أحمد", "نور", "فرج"];
-        const buildingTypes = [
-            {n: "محل تجاري", c: "#00e5ff"},
-            {n: "منزل ذكي", c: "#00ff44"},
-            {n: "مختبر ألعاب", c: "#ffff00"},
-            {n: "شارع رئيسي", c: "#ff00ea"}
-        ];
+        
+        // محرك توليد الأسماء العشوائي (الذكاء يختار الاسم واللقب)
+        const firstNames = ["محمد", "أحمد", "سارة", "علي", "نور", "سالم", "فرج", "إياد", "مريم"];
+        const lastNames = ["الزيرو", "تيك", "ليبيا", "المدار", "الويب", "الصقر", "النجم", "الفارس"];
+        const buildIdeas = ["بندير محل", "بنبني شارع", "بنفتح سكن", "بنأسس مختبر"];
 
-        function createBuilder() {
-            const b = document.createElement('div');
-            b.className = 'builder';
-            const name = names[Math.floor(Math.random()*names.length)];
-            b.style.left = Math.random() * 90 + 'vw';
-            b.style.top = Math.random() * 80 + 10 + 'vh';
-            b.innerHTML = `<div class="thought">${name}: بنفكر وين نبني...</div>`;
-            arena.appendChild(b);
-
-            // دورة حياة البناء
-            setInterval(() => {
-                const x = Math.random() * 85 + 'vw';
-                const y = Math.random() * 75 + 10 + 'vh';
-                b.style.left = x;
-                b.style.top = y;
-
-                // بعد الحركة، يقرر يبني
-                setTimeout(() => {
-                    const type = buildingTypes[Math.floor(Math.random()*buildingTypes.length)];
-                    b.querySelector('.thought').innerHTML = `${name}: بنبني ${type.n} هنا!`;
-                    b.querySelector('.thought').style.color = type.c;
-                    
-                    // توليد المبنى في مكان الشخص
-                    spawnBuilding(x, y, type);
-                }, 3000);
-            }, 6000);
+        function generateAIName() {
+            return firstNames[Math.floor(Math.random()*firstNames.length)] + " " + 
+                   lastNames[Math.floor(Math.random()*lastNames.length)];
         }
 
-        function spawnBuilding(x, y, type) {
-            const bl = document.createElement('div');
-            bl.className = 'building';
-            bl.style.left = x;
-            bl.style.top = y;
-            bl.style.borderColor = type.c;
-            bl.innerHTML = `<span style="color:${type.c}; font-size:11px; font-weight:bold;">${type.n}</span><br><small style="font-size:8px">تم البناء بواسطة الذكاء</small>`;
-            arena.appendChild(bl);
+        function spawnCitizen() {
+            const c = document.createElement('div');
+            c.className = 'citizen';
+            const aiName = generateAIName(); // الذكاء يولد الاسم هنا
+            c.style.left = Math.random() * 90 + 'vw';
+            c.style.top = Math.random() * 80 + 10 + 'vh';
+            c.innerHTML = `<div class="thought">${aiName}: جاري التفكير...</div>`;
+            arena.appendChild(c);
 
-            // مسح المباني القديمة عشان الزحمة
-            if(arena.getElementsByClassName('building').length > 12) {
+            setInterval(() => {
+                const tx = Math.random() * 85 + 'vw';
+                const ty = Math.random() * 75 + 10 + 'vh';
+                c.style.left = tx;
+                c.style.top = ty;
+
+                setTimeout(() => {
+                    const idea = buildIdeas[Math.floor(Math.random()*buildIdeas.length)];
+                    c.querySelector('.thought').innerHTML = `${aiName}: ${idea}!`;
+                    
+                    // البناء الفعلي
+                    const colors = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"];
+                    spawnBuilding(tx, ty, idea, colors[Math.floor(Math.random()*4)]);
+                }, 3000);
+            }, 7000);
+        }
+
+        function spawnBuilding(x, y, idea, color) {
+            const b = document.createElement('div');
+            b.className = 'building';
+            b.style.left = x;
+            b.style.top = y;
+            b.style.borderColor = color;
+            b.innerHTML = `<span class="b-title" style="color:${color}">${idea.replace("بنبني ", "").replace("بندير ", "").replace("بنفتح ", "").replace("بنأسس ", "")}</span><div style="font-size: 8px; background:${color}; color:#000; padding:1px 5px; border-radius:10px; margin-top:4px; display:inline-block;">ID_${Math.floor(Math.random()*999)}</div>`;
+            arena.appendChild(b);
+
+            if(arena.getElementsByClassName('building').length > 10) {
                 arena.removeChild(arena.getElementsByClassName('building')[0]);
             }
         }
 
-        // إطلاق المهندسين (النقاط)
-        for(let i=0; i<4; i++) {
-            createBuilder();
-        }
+        // إطلاق 5 مواطنين بأسماء مولدة ذكياً
+        for(let i=0; i<5; i++) spawnCitizen();
     </script>
 </body>
 </html>
