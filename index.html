@@ -5,97 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Zero | القاعدة صفر</title>
     <style>
-        body { margin: 0; background: #000; color: #00e5ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
-        
-        /* أرض القاعدة Base Zero */
-        #arena { position: absolute; width: 10000px; height: 10000px; background: radial-gradient(#111 1px, transparent 1px); background-size: 50px 50px; cursor: crosshair; }
-
-        /* واجهة المستخدم الذكية */
-        #header-ui { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 12px; display: flex; justify-content: space-between; border-bottom: 2px solid #00e5ff; z-index: 1000; box-shadow: 0 0 15px #00e5ff; }
-        .stat-box { background: #050505; padding: 8px 18px; border-radius: 4px; border: 1px solid #00e5ff; font-weight: bold; }
-
-        /* مساحة إعلانات جوجل */
-        .ad-space { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 320px; height: 50px; background: #111; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #444; z-index: 1000; }
-
-        /* مباني النواة */
-        .building { position: absolute; border: 1px solid #00e5ff; background: rgba(0, 229, 255, 0.1); color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; transition: all 2s ease-in-out; }
-        
-        .notification { position: fixed; bottom: 80px; right: 20px; background: #00e5ff; color: #000; padding: 10px; border-radius: 5px; display: none; z-index: 2000; }
+        body { margin: 0; background: #000; color: #00e5ff; font-family: sans-serif; overflow: hidden; }
+        #arena { position: absolute; width: 10000px; height: 10000px; background: radial-gradient(#111 1px, transparent 1px); background-size: 50px 50px; }
+        #header-ui { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 12px; display: flex; justify-content: space-between; border-bottom: 2px solid #00e5ff; z-index: 1000; }
+        .stat-box { background: #050505; padding: 8px 18px; border-radius: 4px; border: 1px solid #00e5ff; font-weight: bold; cursor: pointer; }
+        #wallet-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #050505; border: 2px solid #00e5ff; padding: 20px; z-index: 2000; text-align: center; width: 85%; box-shadow: 0 0 20px #00e5ff; }
+        .wallet-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: transparent; border: 1px solid #00e5ff; color: #00e5ff; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <div id="header-ui">
-        <div class="stat-box">💰 المحفظة: <span id="balance">0.00</span> $</div>
-        <div style="font-weight: bold; letter-spacing: 2px;">BASE ZERO</div>
-        <div class="stat-box">⏳ عمر القاعدة: <span id="age">0 يوم و 0 ساعة</span></div>
+        <div class="stat-box" onclick="document.getElementById('wallet-modal').style.display='block'">💰 شحن المحفظة</div>
+        <div style="font-weight: bold;">BASE ZERO</div>
+        <div class="stat-box">⏳ العمر: <span id="age">0</span></div>
     </div>
-
-    <div id="arena">
-        </div>
-
-    <div id="notify" class="notification">الذكاء الاصطناعي يطور ميزة جديدة الآن...</div>
-
-    <div class="ad-space">مساحة إعلانات GOOGLE ADSENS</div>
-
+    <div id="arena"></div>
+    <div id="wallet-modal">
+        <h3>خزنة القاعدة</h3>
+        <p>اختر وسيلة الشحن:</p>
+        <button class="wallet-btn" onclick="alert('تواصل مع الإدارة لإرسال الرصيد')">محفظة إلكترونية (رصيد/سداد)</button>
+        <button class="wallet-btn" onclick="alert('تواصل لإرسال USDT')">عملات رقمية (Binance)</button>
+        <button style="color:red; background:none; border:none; margin-top:10px;" onclick="document.getElementById('wallet-modal').style.display='none'">إغلاق</button>
+    </div>
     <script>
-        const arena = document.getElementById('arena');
-        const ageDisp = document.getElementById('age');
-        const notify = document.getElementById('notify');
-
-        // توقيت بدء القاعدة (يُحفظ في المتصفح)
         let birth = localStorage.getItem('base_zero_start') || Date.now();
         localStorage.setItem('base_zero_start', birth);
-
-        function updateBaseZero() {
-            let now = Date.now();
-            let diff = Math.floor((now - birth) / 1000);
-            let days = Math.floor(diff / 86400);
-            let hours = Math.floor((diff % 86400) / 3600);
-            let mins = Math.floor((diff % 3600) / 60);
-            
-            ageDisp.innerText = `${days} يوم، ${hours} ساعة، ${mins} دقيقة`;
-
-            // النواة تكتشف أرض جديدة كل 10 دقائق
-            if (diff % 600 === 0 && diff > 0) {
-                spawnStructure();
-                showNotification();
-            }
-        }
-
-        function spawnStructure() {
-            let b = document.createElement('div');
-            b.className = 'building';
-            b.style.left = (Math.random() * 4000 + 500) + 'px';
-            b.style.top = (Math.random() * 4000 + 500) + 'px';
-            b.style.width = '120px'; b.style.height = '90px';
-            b.innerHTML = "<center>مختبر Base Zero<br>قيد التطوير</center>";
-            arena.appendChild(b);
-        }
-
-        function showNotification() {
-            notify.style.display = 'block';
-            setTimeout(() => notify.style.display = 'none', 5000);
-        }
-
-        setInterval(updateBaseZero, 1000);
-        updateBaseZero();
-
-        // التحكم في الحركة عبر اللمس (Honor X6C)
-        let startX, startY, scrollLeft, scrollTop;
-        document.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].pageX - arena.offsetLeft;
-            startY = e.touches[0].pageY - arena.offsetTop;
-            scrollLeft = window.pageXOffset;
-            scrollTop = window.pageYOffset;
-        });
-        document.addEventListener('touchmove', (e) => {
-            const x = e.touches[0].pageX - arena.offsetLeft;
-            const y = e.touches[0].pageY - arena.offsetTop;
-            const walkX = (x - startX);
-            const walkY = (y - startY);
-            window.scrollTo(scrollLeft - walkX, scrollTop - walkY);
-        });
+        setInterval(() => {
+            let diff = Math.floor((Date.now() - birth) / 1000);
+            document.getElementById('age').innerText = Math.floor(diff/60) + " دقيقة";
+        }, 1000);
     </script>
 </body>
 </html>
