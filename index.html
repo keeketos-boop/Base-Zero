@@ -3,94 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | AI Identity</title>
+    <title>Base Zero | Real-Time Engine</title>
     <style>
         :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; }
         body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background-image: radial-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px); background-size: 60px 60px; }
         
-        .building { position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.8); padding: 8px; border-radius: 6px; text-align: center; z-index: 10; transition: 1.5s; }
-        .b-title { font-size: 11px; font-weight: bold; display: block; }
+        /* نظام الصفحات الحقيقي */
+        .page-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 2000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
 
-        .citizen { position: absolute; width: 5px; height: 5px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px #fff; transition: all 4s ease-in-out; z-index: 20; }
-        .thought { position: absolute; top: -25px; right: 0; font-size: 9px; color: var(--green); white-space: nowrap; background: rgba(0,0,0,0.8); padding: 2px 6px; border-right: 2px solid var(--green); }
+        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background-image: radial-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px); background-size: 40px 40px; }
+        
+        .building { position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.8); padding: 8px; border-radius: 6px; text-align: center; z-index: 10; }
+        .citizen { position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px #fff; transition: all 3s ease-in-out; z-index: 20; }
+        .thought { position: absolute; top: -25px; right: 0; font-size: 10px; color: var(--green); white-space: nowrap; background: rgba(0,0,0,0.85); padding: 2px 8px; border-right: 2px solid var(--green); }
 
         #nav { position: fixed; top: 0; width: 100%; padding: 12px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; }
-        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 8px; z-index: 1000; }
-        .btn { padding: 12px 18px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; min-width: 90px; }
+        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 1000; }
+        .btn { padding: 12px 25px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.9); box-shadow: 0 0 15px var(--main); }
     </style>
 </head>
 <body>
 
+    <div id="screen-login" class="page-overlay"><h2>👤 دخول النظام</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
+    <div id="screen-deposit" class="page-overlay"><h2>💰 لوحة الإيداع</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
+    <div id="screen-games" class="page-overlay"><h2>🎮 مركز الألعاب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
+    <div id="screen-withdraw" class="page-overlay"><h2>💸 لوحة السحب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
+
     <div id="nav">
-        <div style="color:var(--main); font-weight:bold;">[ 🤖 هوية مستقلة ]</div>
-        <div style="letter-spacing:4px; font-weight:900;">BASE ZERO</div>
-        <div id="status" style="font-size:10px; color:var(--green);">AI_NAMING_ACTIVE</div>
+        <div onclick="ui('screen-login')" style="color:var(--main); cursor:pointer; font-weight:bold;">[ دخول النظام ]</div>
+        <div style="letter-spacing:3px; font-weight:900;">BASE ZERO</div>
+        <div id="ai-log" style="font-size:10px; color:var(--green);">ENGINE: READY</div>
     </div>
 
     <div id="arena"></div>
 
     <div id="dock">
-        <button class="btn" style="background:var(--main); color:#000;">إيداع</button>
-        <button class="btn" style="background:var(--gold); color:#000;">ألعاب</button>
-        <button class="btn" style="background:var(--pink); color:#fff;">سحب</button>
+        <button class="btn" onclick="ui('screen-deposit')" style="background:var(--main); color:#000;">إيداع</button>
+        <button class="btn" onclick="ui('screen-games')" style="background:var(--gold); color:#000;">ألعاب</button>
+        <button class="btn" onclick="ui('screen-withdraw')" style="background:var(--pink); color:#fff;">سحب</button>
     </div>
 
     <script>
-        const arena = document.getElementById('arena');
-        
-        // محرك توليد الأسماء العشوائي (الذكاء يختار الاسم واللقب)
-        const firstNames = ["محمد", "أحمد", "سارة", "علي", "نور", "سالم", "فرج", "إياد", "مريم"];
-        const lastNames = ["الزيرو", "تيك", "ليبيا", "المدار", "الويب", "الصقر", "النجم", "الفارس"];
-        const buildIdeas = ["بندير محل", "بنبني شارع", "بنفتح سكن", "بنأسس مختبر"];
-
-        function generateAIName() {
-            return firstNames[Math.floor(Math.random()*firstNames.length)] + " " + 
-                   lastNames[Math.floor(Math.random()*lastNames.length)];
+        // 1. نظام الأزرار التفاعلي (مش فيديو!)
+        function ui(action) {
+            document.querySelectorAll('.page-overlay').forEach(p => p.style.display = 'none');
+            if(action !== 'close') document.getElementById(action).style.display = 'flex';
         }
 
-        function spawnCitizen() {
+        const arena = document.getElementById('arena');
+        const fNames = ["محمد", "أحمد", "سارة", "علي", "نور"];
+        const lNames = ["الزيرو", "الخبير", "المدار", "تيك", "ستار"];
+        const buildTasks = ["بناء متجر", "تأسيس سكن", "تطوير مختبر", "شق شارع"];
+
+        // 2. محرك الذكاء الحركي
+        function spawnAI() {
             const c = document.createElement('div');
             c.className = 'citizen';
-            const aiName = generateAIName(); // الذكاء يولد الاسم هنا
-            c.style.left = Math.random() * 90 + 'vw';
-            c.style.top = Math.random() * 80 + 10 + 'vh';
-            c.innerHTML = `<div class="thought">${aiName}: جاري التفكير...</div>`;
+            const name = fNames[Math.floor(Math.random()*5)] + " " + lNames[Math.floor(Math.random()*5)];
+            c.style.left = Math.random() * 80 + 'vw';
+            c.style.top = Math.random() * 70 + 15 + 'vh';
+            c.innerHTML = `<div class="thought">${name}: فحص الساحة...</div>`;
             arena.appendChild(c);
 
             setInterval(() => {
-                const tx = Math.random() * 85 + 'vw';
-                const ty = Math.random() * 75 + 10 + 'vh';
-                c.style.left = tx;
-                c.style.top = ty;
+                // النقطة تمشي لمكان جديد "فعلاً"
+                const x = Math.random() * 85 + 'vw';
+                const y = Math.random() * 75 + 15 + 'vh';
+                c.style.left = x;
+                c.style.top = y;
 
                 setTimeout(() => {
-                    const idea = buildIdeas[Math.floor(Math.random()*buildIdeas.length)];
-                    c.querySelector('.thought').innerHTML = `${aiName}: ${idea}!`;
+                    const task = buildTasks[Math.floor(Math.random()*4)];
+                    c.querySelector('.thought').innerHTML = `${name}: ${task}!`;
                     
-                    // البناء الفعلي
-                    const colors = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"];
-                    spawnBuilding(tx, ty, idea, colors[Math.floor(Math.random()*4)]);
+                    // بناء الوحدة في مكان النقطة
+                    drawUnit(x, y, task);
                 }, 3000);
-            }, 7000);
+            }, 8000);
         }
 
-        function spawnBuilding(x, y, idea, color) {
+        function drawUnit(x, y, label) {
             const b = document.createElement('div');
             b.className = 'building';
-            b.style.left = x;
-            b.style.top = y;
+            b.style.left = x; b.style.top = y;
+            const color = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"][Math.floor(Math.random()*4)];
             b.style.borderColor = color;
-            b.innerHTML = `<span class="b-title" style="color:${color}">${idea.replace("بنبني ", "").replace("بندير ", "").replace("بنفتح ", "").replace("بنأسس ", "")}</span><div style="font-size: 8px; background:${color}; color:#000; padding:1px 5px; border-radius:10px; margin-top:4px; display:inline-block;">ID_${Math.floor(Math.random()*999)}</div>`;
+            b.innerHTML = `<span style="color:${color}; font-size:11px; font-weight:bold;">${label}</span><div style="font-size:8px; background:${color}; color:#000; padding:1px 4px; border-radius:10px; margin-top:4px;">ID_${Math.floor(Math.random()*999)}</div>`;
             arena.appendChild(b);
 
-            if(arena.getElementsByClassName('building').length > 10) {
-                arena.removeChild(arena.getElementsByClassName('building')[0]);
-            }
+            if(arena.getElementsByClassName('building').length > 10) arena.removeChild(arena.getElementsByClassName('building')[0]);
         }
 
-        // إطلاق 5 مواطنين بأسماء مولدة ذكياً
-        for(let i=0; i<5; i++) spawnCitizen();
+        // تشغيل المحرك
+        for(let i=0; i<4; i++) spawnAI();
     </script>
 </body>
 </html>
