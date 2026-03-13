@@ -3,104 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | Real-Time Engine</title>
+    <title>Base Zero | AI Logic Engine</title>
     <style>
         :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; }
         body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* نظام الصفحات الحقيقي */
-        .page-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); z-index: 2000; display: none;
-            flex-direction: column; align-items: center; justify-content: center;
+        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background: #000; }
+        
+        /* تصميم الوحدات (مباني/مطارات/محلات) */
+        .building { 
+            position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.9); 
+            padding: 10px; border-radius: 4px; text-align: center; min-width: 90px; z-index: 10;
+        }
+        .b-title { font-size: 11px; font-weight: bold; display: block; color: var(--main); }
+
+        /* المواطنين المبرمجين (الناس) */
+        .citizen { 
+            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; 
+            box-shadow: 0 0 10px #fff; transition: all 3s ease-in-out; z-index: 20; 
+        }
+        .thought-bubble { 
+            position: absolute; top: -25px; right: 0; font-size: 9px; 
+            color: var(--green); background: rgba(0,0,0,0.8); padding: 2px 8px; 
+            border-right: 2px solid var(--green); white-space: nowrap;
         }
 
-        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background-image: radial-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px); background-size: 40px 40px; }
-        
-        .building { position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.8); padding: 8px; border-radius: 6px; text-align: center; z-index: 10; }
-        .citizen { position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px #fff; transition: all 3s ease-in-out; z-index: 20; }
-        .thought { position: absolute; top: -25px; right: 0; font-size: 10px; color: var(--green); white-space: nowrap; background: rgba(0,0,0,0.85); padding: 2px 8px; border-right: 2px solid var(--green); }
-
-        #nav { position: fixed; top: 0; width: 100%; padding: 12px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; }
+        /* واجهة التحكم */
+        #nav { position: fixed; top: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; }
         #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 1000; }
-        .btn { padding: 12px 25px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.9); box-shadow: 0 0 15px var(--main); }
+        .btn { padding: 12px 20px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; min-width: 95px; }
+
+        /* شاشات الأنظمة */
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; display:none; flex-direction:column; align-items:center; justify-content:center; }
     </style>
 </head>
 <body>
 
-    <div id="screen-login" class="page-overlay"><h2>👤 دخول النظام</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
-    <div id="screen-deposit" class="page-overlay"><h2>💰 لوحة الإيداع</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
-    <div id="screen-games" class="page-overlay"><h2>🎮 مركز الألعاب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
-    <div id="screen-withdraw" class="page-overlay"><h2>💸 لوحة السحب</h2><button onclick="ui('close')" class="btn" style="background:var(--main)">خروج</button></div>
+    <div id="screen-login" class="overlay"><h2>🔐 دخول النظام</h2><button onclick="closeUI()" class="btn" style="background:var(--main)">إغلاق</button></div>
+    <div id="screen-dep" class="overlay"><h2>💳 محفظة الإيداع</h2><button onclick="closeUI()" class="btn" style="background:var(--main)">إغلاق</button></div>
+    <div id="screen-game" class="overlay"><h2>🎮 صالة الألعاب</h2><button onclick="closeUI()" class="btn" style="background:var(--main)">إغلاق</button></div>
+    <div id="screen-out" class="overlay"><h2>💸 بوابة السحب</h2><button onclick="closeUI()" class="btn" style="background:var(--main)">إغلاق</button></div>
 
     <div id="nav">
-        <div onclick="ui('screen-login')" style="color:var(--main); cursor:pointer; font-weight:bold;">[ دخول النظام ]</div>
-        <div style="letter-spacing:3px; font-weight:900;">BASE ZERO</div>
-        <div id="ai-log" style="font-size:10px; color:var(--green);">ENGINE: READY</div>
+        <div onclick="openUI('screen-login')" style="color:var(--main); font-weight:900; cursor:pointer;">[ دخول ]</div>
+        <div style="letter-spacing:4px; font-weight:900;">BASE ZERO</div>
+        <div id="log" style="color:var(--green); font-size:10px;">SYSTEM: RUNNING</div>
     </div>
 
     <div id="arena"></div>
 
     <div id="dock">
-        <button class="btn" onclick="ui('screen-deposit')" style="background:var(--main); color:#000;">إيداع</button>
-        <button class="btn" onclick="ui('screen-games')" style="background:var(--gold); color:#000;">ألعاب</button>
-        <button class="btn" onclick="ui('screen-withdraw')" style="background:var(--pink); color:#fff;">سحب</button>
+        <button class="btn" onclick="openUI('screen-dep')" style="background:var(--main); color:#000;">إيداع</button>
+        <button class="btn" onclick="openUI('screen-game')" style="background:var(--gold); color:#000;">ألعاب</button>
+        <button class="btn" onclick="openUI('screen-out')" style="background:var(--pink); color:#fff;">سحب</button>
     </div>
 
     <script>
-        // 1. نظام الأزرار التفاعلي (مش فيديو!)
-        function ui(action) {
-            document.querySelectorAll('.page-overlay').forEach(p => p.style.display = 'none');
-            if(action !== 'close') document.getElementById(action).style.display = 'flex';
-        }
+        // 1. برمجة الأزرار (Navigation Logic)
+        function openUI(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeUI() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
 
         const arena = document.getElementById('arena');
-        const fNames = ["محمد", "أحمد", "سارة", "علي", "نور"];
-        const lNames = ["الزيرو", "الخبير", "المدار", "تيك", "ستار"];
-        const buildTasks = ["بناء متجر", "تأسيس سكن", "تطوير مختبر", "شق شارع"];
+        const names = ["محمد", "سارة", "أحمد", "فرج", "نور", "سالم"];
+        const goals = ["ماشي للمطار", "بنشري من المحل", "بنبني شارع", "فحص القاعدة", "بنمشي نلعب"];
 
-        // 2. محرك الذكاء الحركي
-        function spawnAI() {
-            const c = document.createElement('div');
-            c.className = 'citizen';
-            const name = fNames[Math.floor(Math.random()*5)] + " " + lNames[Math.floor(Math.random()*5)];
-            c.style.left = Math.random() * 80 + 'vw';
-            c.style.top = Math.random() * 70 + 15 + 'vh';
-            c.innerHTML = `<div class="thought">${name}: فحص الساحة...</div>`;
-            arena.appendChild(c);
+        // 2. برمجة الناس (AI Individual Logic)
+        function createPerson() {
+            const p = document.createElement('div');
+            p.className = 'citizen';
+            const name = names[Math.floor(Math.random()*names.length)];
+            
+            p.style.left = Math.random() * 90 + 'vw';
+            p.style.top = Math.random() * 80 + 10 + 'vh';
+            p.innerHTML = `<div class="thought-bubble">${name}: في حالة تأهب</div>`;
+            arena.appendChild(p);
 
+            // دورة حياة التفكير المستقل
             setInterval(() => {
-                // النقطة تمشي لمكان جديد "فعلاً"
+                const goal = goals[Math.floor(Math.random()*goals.length)];
+                p.querySelector('.thought-bubble').innerText = `${name}: ${goal}`;
+                
+                // الحركة بناءً على القرار
                 const x = Math.random() * 85 + 'vw';
-                const y = Math.random() * 75 + 15 + 'vh';
-                c.style.left = x;
-                c.style.top = y;
+                const y = Math.random() * 75 + 10 + 'vh';
+                p.style.left = x;
+                p.style.top = y;
 
-                setTimeout(() => {
-                    const task = buildTasks[Math.floor(Math.random()*4)];
-                    c.querySelector('.thought').innerHTML = `${name}: ${task}!`;
-                    
-                    // بناء الوحدة في مكان النقطة
-                    drawUnit(x, y, task);
-                }, 3000);
-            }, 8000);
+                // لو قرر يبني، يظهر مبنى في مكانه
+                if(Math.random() > 0.7) {
+                    setTimeout(() => buildUnit(x, y, goal.replace("بنبني ", "").replace("ماشي لـ", "")), 3000);
+                }
+            }, 6000);
         }
 
-        function drawUnit(x, y, label) {
+        function buildUnit(x, y, type) {
             const b = document.createElement('div');
             b.className = 'building';
             b.style.left = x; b.style.top = y;
-            const color = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"][Math.floor(Math.random()*4)];
-            b.style.borderColor = color;
-            b.innerHTML = `<span style="color:${color}; font-size:11px; font-weight:bold;">${label}</span><div style="font-size:8px; background:${color}; color:#000; padding:1px 4px; border-radius:10px; margin-top:4px;">ID_${Math.floor(Math.random()*999)}</div>`;
+            b.style.borderColor = ["#00e5ff", "#00ff44", "#ffff00", "#ff00ea"][Math.floor(Math.random()*4)];
+            b.innerHTML = `<span class="b-title">${type}</span><small style="font-size:8px">ID_${Math.floor(Math.random()*99)}</small>`;
             arena.appendChild(b);
 
             if(arena.getElementsByClassName('building').length > 10) arena.removeChild(arena.getElementsByClassName('building')[0]);
         }
 
-        // تشغيل المحرك
-        for(let i=0; i<4; i++) spawnAI();
+        // إطلاق 5 شخصيات ببرمجة مستقلة
+        for(let i=0; i<5; i++) createPerson();
     </script>
 </body>
 </html>
