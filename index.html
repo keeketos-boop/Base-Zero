@@ -3,116 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | Autonomous Construction</title>
+    <title>Base Zero | المنظومة المتكاملة</title>
     <style>
-        body { margin: 0; background: #000; color: #00e5ff; font-family: 'Courier New', monospace; overflow: hidden; }
-        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background: #000; }
+        /* تنسيق الواجهة الرسومية */
+        :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --bg: #000; }
+        body { margin: 0; background: var(--bg); color: var(--main); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
         
-        /* شريط النظام العلوي */
-        #system-status { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 10px 20px; border-bottom: 1px solid #00e5ff; display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; font-size: 14px; }
+        /* الخلفية الذكية */
+        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background: linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px); background-size: 50px 50px; }
 
-        /* وحدات البناء الذكي (الذكاء الاصطناعي) */
-        .ai-structure { position: absolute; border: 1px solid #00e5ff; background: rgba(0, 229, 255, 0.02); transition: all 2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,229,255,0.1); }
-        .ai-label { font-size: 9px; margin-top: 5px; opacity: 0.7; }
+        /* شريط التحكم العلوي */
+        #nav { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--main); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; box-sizing: border-box; }
+        .stat-item { font-size: 12px; letter-spacing: 1px; color: #fff; }
 
-        /* النوافذ المنبثقة المستقلة */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; }
-        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 350px; border: 2px solid #00e5ff; background: #050505; padding: 25px; text-align: center; box-shadow: 0 0 50px rgba(0,229,255,0.3); }
+        /* وحدات المدينة (التنسيق الجديد) */
+        .building { position: absolute; border: 1px solid var(--main); background: rgba(0,229,255,0.03); border-radius: 4px; padding: 15px; display: flex; flex-direction: column; align-items: center; transition: 1.5s; backdrop-filter: blur(2px); }
+        .building:hover { box-shadow: 0 0 20px var(--main); transform: scale(1.05); }
+        .b-name { font-size: 11px; font-weight: bold; margin-bottom: 8px; }
+        .b-tag { font-size: 9px; padding: 3px 8px; border-radius: 20px; color: #000; font-weight: bold; text-transform: uppercase; }
+
+        /* النوافذ المنبثقة (Popups) */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; }
+        .popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: #0a0a0a; border: 1px solid var(--main); padding: 30px; border-radius: 10px; text-align: center; box-shadow: 0 0 50px rgba(0,229,255,0.2); }
         
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #00e5ff; color: #00e5ff; border-radius: 0; outline: none; }
-        .action-btn { width: 100%; padding: 15px; margin: 10px 0; background: transparent; border: 1px solid #00e5ff; color: #00e5ff; cursor: pointer; font-weight: bold; font-family: inherit; }
-        .action-btn:hover { background: #00e5ff; color: #000; }
+        /* الأزرار والمدخلات */
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #222; color: var(--main); border-radius: 5px; outline: none; }
+        input:focus { border-color: var(--main); }
+        .btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; text-decoration: none; }
+        .btn-cyan { background: var(--main); color: #000; }
+        .btn-pink { background: var(--pink); color: #fff; }
+        .btn-gold { background: var(--gold); color: #000; }
 
         /* التحكم السفلي */
-        #core-controls { position: fixed; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 1000; }
+        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 12px; z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <div id="system-status">
-        <div onclick="openModal('login-m')" style="cursor:pointer">[ ACCESS_LOGIN ]</div>
-        <div style="letter-spacing: 5px; font-weight: bold;">BASE ZERO</div>
-        <div>Uptime: <span id="clock">0</span>s</div>
+    <div id="nav">
+        <div onclick="openP('login-p')" style="cursor:pointer; color:var(--main)">[ 👤 دخول النظام ]</div>
+        <div style="font-size: 20px; font-weight: 900; letter-spacing: 5px; color: #fff;">BASE <span style="color:var(--main)">ZERO</span></div>
+        <div class="stat-item">النشاط: <span id="clock" style="color:var(--main)">0</span>s</div>
     </div>
 
     <div id="arena"></div>
 
-    <div id="core-controls">
-        <button class="action-btn" style="width:120px" onclick="openModal('dep-m')">إيداع</button>
-        <button class="action-btn" style="width:120px; border-color:#ff00ea; color:#ff00ea" onclick="openModal('with-m')">سحب</button>
+    <div id="dock">
+        <button class="btn btn-cyan" style="width:110px" onclick="openP('dep-p')">إيداع</button>
+        <button class="btn btn-gold" style="width:110px" onclick="openP('game-p')">ألعاب</button>
+        <button class="btn btn-pink" style="width:110px" onclick="openP('with-p')">سحب</button>
     </div>
 
-    <div id="login-m" class="modal-overlay">
-        <div class="modal-box">
-            <h3>SECURE_LOGIN</h3>
+    <div id="login-p" class="overlay">
+        <div class="popup">
+            <h2 style="margin-top:0">تأكيد الهوية</h2>
             <input type="text" placeholder="USER_ID">
-            <input type="password" placeholder="PASS_KEY">
-            <button class="action-btn" onclick="closeModal()">INITIATE_SESSION</button>
-            <p onclick="closeModal()" style="color:red; cursor:pointer; font-size:12px;">[ CLOSE ]</p>
+            <input type="password" placeholder="PASSWORD">
+            <button class="btn btn-cyan" onclick="closeP()">تسجيل الدخول</button>
+            <p onclick="closeP()" style="color:red; cursor:pointer; font-size:12px;">[ إغلاق ]</p>
         </div>
     </div>
 
-    <div id="dep-m" class="modal-overlay">
-        <div class="modal-box">
-            <h3>DEPOSIT_SYSTEM</h3>
-            <p style="font-size:12px;">النظام جاهز لاستلام القيمة داخلياً:</p>
-            <input type="text" placeholder="DESTINATION_WALLET">
-            <input type="number" placeholder="AMOUNT">
-            <button class="action-btn" onclick="closeModal()">CONFIRM_DEPOSIT</button>
-            <p onclick="closeModal()" style="color:red; cursor:pointer; font-size:12px;">[ CLOSE ]</p>
+    <div id="dep-p" class="overlay">
+        <div class="popup">
+            <h2>إيداع المكتسبات</h2>
+            <p style="font-size:12px; color:#666">أدخل القيمة المراد إضافتها للقاعدة</p>
+            <input type="number" placeholder="0.00">
+            <button class="btn btn-cyan" onclick="closeP()">تأكيد الإيداع</button>
+            <p onclick="closeP()" style="color:red; cursor:pointer; font-size:12px;">[ إغلاق ]</p>
         </div>
     </div>
 
-    <div id="with-m" class="modal-overlay">
-        <div class="modal-box" style="border-color:#ff00ea">
-            <h3 style="color:#ff00ea;">WITHDRAW_SYSTEM</h3>
-            <input type="number" placeholder="WITHDRAW_AMOUNT">
-            <button class="action-btn" style="border-color:#ff00ea; color:#ff00ea" onclick="closeModal()">EXECUTE_PAYOUT</button>
-            <p onclick="closeModal()" style="color:red; cursor:pointer; font-size:12px;">[ CLOSE ]</p>
+    <div id="game-p" class="overlay">
+        <div class="popup" style="border-color:var(--gold)">
+            <h2 style="color:var(--gold)">مختبر الألعاب</h2>
+            <div style="background:rgba(255,255,0,0.05); border:1px solid var(--gold); padding:15px; border-radius:8px;">
+                <h4>LUDO BASE AI</h4>
+                <button class="btn btn-gold" style="font-size:12px" onclick="alert('جاري تشغيل محرك اللعبة...')">إبدأ اللعب</button>
+            </div>
+            <p onclick="closeP()" style="color:red; cursor:pointer; margin-top:20px;">[ إغلاق ]</p>
+        </div>
+    </div>
+
+    <div id="with-p" class="overlay">
+        <div class="popup" style="border-color:var(--pink)">
+            <h2 style="color:var(--pink)">سحب المكتسبات</h2>
+            <input type="number" placeholder="القيمة">
+            <button class="btn btn-pink" onclick="closeP()">تأفيذ طلب السحب</button>
+            <p onclick="closeP()" style="color:red; cursor:pointer; font-size:12px;">[ إغلاق ]</p>
         </div>
     </div>
 
     <script>
-        function openModal(id) { document.getElementById(id).style.display = 'block'; }
-        function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+        function openP(id) { closeP(); document.getElementById(id).style.display = 'block'; }
+        function closeP() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
 
-        // منطق "البناء الذاتي" (Self-Building Logic)
-        const arena = document.getElementById('arena');
+        const types = [
+            { n: "متجر القاعدة", t: "SHOP", c: "#00e5ff" },
+            { n: "منزل ذكي", t: "HOME", c: "#00ff44" },
+            { n: "مختبر ألعاب", t: "GAME", c: "#ffff00" },
+            { n: "مركز شركات", t: "OFFICE", c: "#ff00ea" }
+        ];
+
         function autoBuild() {
-            const structure = document.createElement('div');
-            structure.className = 'ai-structure';
+            const arena = document.getElementById('arena');
+            const b = document.createElement('div');
+            const info = types[Math.floor(Math.random()*types.length)];
             
-            // أحجام ومواقع عشوائية ذكية
-            let w = Math.random() * 150 + 100;
-            let h = w * 0.6;
-            structure.style.width = w + 'px';
-            structure.style.height = h + 'px';
-            structure.style.left = Math.random() * (window.innerWidth - 200) + 'px';
-            structure.style.top = Math.random() * (window.innerHeight - 200) + 'px';
+            b.className = 'building';
+            b.style.left = Math.random() * (window.innerWidth - 180) + 'px';
+            b.style.top = Math.random() * (window.innerHeight - 180) + 60 + 'px';
+            b.style.borderColor = info.c;
             
-            structure.innerHTML = `<span style="font-size:10px">BUILDING...</span>`;
-            arena.appendChild(structure);
-
-            // تحول الوحدة بعد البناء
-            setTimeout(() => {
-                structure.style.borderColor = (Math.random() > 0.5) ? "#00e5ff" : "#ff00ea";
-                structure.innerHTML = `
-                    <span style="font-size:11px">NODE_${Math.floor(Math.random()*1000)}</span>
-                    <span class="ai-label">STABILITY: ${Math.floor(Math.random()*100)}%</span>
-                `;
-            }, 2000);
-
-            // الحفاظ على أداء المتصفح (مسح الوحدات القديمة)
-            if(arena.childElementCount > 12) {
-                arena.removeChild(arena.firstChild);
-            }
+            b.innerHTML = `
+                <span class="b-name">${info.n}</span>
+                <span class="b-tag" style="background:${info.c}">ID_${Math.floor(Math.random()*99)}</span>
+            `;
+            
+            arena.appendChild(b);
+            if(arena.childElementCount > 12) arena.removeChild(arena.firstChild);
         }
 
-        // تشغيل دورة البناء والعداد
         setInterval(autoBuild, 4000);
         let s = 0; setInterval(() => { s++; document.getElementById('clock').innerText = s; }, 1000);
-        
-        // بناء أولي
         for(let i=0; i<4; i++) autoBuild();
     </script>
 </body>
