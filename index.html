@@ -3,130 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | المنظومة المتكاملة</title>
+    <title>Base Zero | AI Minds</title>
     <style>
-        /* تنسيق الواجهة الرسومية */
-        :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --bg: #000; }
-        body { margin: 0; background: var(--bg); color: var(--main); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
-        
-        /* الخلفية الذكية */
-        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; background: linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px); background-size: 50px 50px; }
+        :root { --main: #00e5ff; --text: #00ff44; --warn: #ffff00; }
+        body { margin: 0; background: #000; color: #fff; font-family: 'Courier New', monospace; overflow: hidden; }
+        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; }
 
-        /* شريط التحكم العلوي */
-        #nav { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--main); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; box-sizing: border-box; }
-        .stat-item { font-size: 12px; letter-spacing: 1px; color: #fff; }
+        /* ستايل المربعات (المباني الذكية) */
+        .building { 
+            position: absolute; border: 1px solid var(--main); background: rgba(0,229,255,0.05); 
+            padding: 8px; border-radius: 4px; display: flex; flex-direction: column; 
+            box-shadow: 0 0 10px rgba(0,229,255,0.2); transition: 1.5s;
+        }
+        .b-header { font-size: 12px; font-weight: bold; color: var(--main); border-bottom: 1px solid #222; margin-bottom: 5px; }
+        .b-status { font-size: 9px; color: #888; }
 
-        /* وحدات المدينة (التنسيق الجديد) */
-        .building { position: absolute; border: 1px solid var(--main); background: rgba(0,229,255,0.03); border-radius: 4px; padding: 15px; display: flex; flex-direction: column; align-items: center; transition: 1.5s; backdrop-filter: blur(2px); }
-        .building:hover { box-shadow: 0 0 20px var(--main); transform: scale(1.05); }
-        .b-name { font-size: 11px; font-weight: bold; margin-bottom: 8px; }
-        .b-tag { font-size: 9px; padding: 3px 8px; border-radius: 20px; color: #000; font-weight: bold; text-transform: uppercase; }
-
-        /* النوافذ المنبثقة (Popups) */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; }
-        .popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: #0a0a0a; border: 1px solid var(--main); padding: 30px; border-radius: 10px; text-align: center; box-shadow: 0 0 50px rgba(0,229,255,0.2); }
-        
-        /* الأزرار والمدخلات */
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #222; color: var(--main); border-radius: 5px; outline: none; }
-        input:focus { border-color: var(--main); }
-        .btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; text-decoration: none; }
-        .btn-cyan { background: var(--main); color: #000; }
-        .btn-pink { background: var(--pink); color: #fff; }
-        .btn-gold { background: var(--gold); color: #000; }
-
-        /* التحكم السفلي */
-        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 12px; z-index: 1000; }
+        /* ستايل المواطنين (النقاط المفكرة) */
+        .citizen {
+            position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 8px #fff; transition: all 4s ease-in-out; z-index: 100;
+        }
+        .thought-bubble { 
+            position: absolute; top: -25px; left: 10px; font-size: 9px; 
+            white-space: nowrap; color: var(--text); background: rgba(0,0,0,0.7);
+            padding: 2px 5px; border-left: 2px solid var(--text);
+        }
     </style>
 </head>
 <body>
 
-    <div id="nav">
-        <div onclick="openP('login-p')" style="cursor:pointer; color:var(--main)">[ 👤 دخول النظام ]</div>
-        <div style="font-size: 20px; font-weight: 900; letter-spacing: 5px; color: #fff;">BASE <span style="color:var(--main)">ZERO</span></div>
-        <div class="stat-item">النشاط: <span id="clock" style="color:var(--main)">0</span>s</div>
+    <div style="position:fixed; top:0; width:100%; padding:10px; background:rgba(0,0,0,0.9); border-bottom:1px solid var(--main); z-index:1000; display:flex; justify-content:space-between; font-size:12px;">
+        <div>SYSTEM: <span id="nodes-count">0</span> UNITS ACTIVE</div>
+        <div style="letter-spacing:3px;">BASE ZERO GENESIS</div>
+        <div id="ai-load">AI PROCESSING...</div>
     </div>
 
     <div id="arena"></div>
 
-    <div id="dock">
-        <button class="btn btn-cyan" style="width:110px" onclick="openP('dep-p')">إيداع</button>
-        <button class="btn btn-gold" style="width:110px" onclick="openP('game-p')">ألعاب</button>
-        <button class="btn btn-pink" style="width:110px" onclick="openP('with-p')">سحب</button>
-    </div>
-
-    <div id="login-p" class="overlay">
-        <div class="popup">
-            <h2 style="margin-top:0">تأكيد الهوية</h2>
-            <input type="text" placeholder="USER_ID">
-            <input type="password" placeholder="PASSWORD">
-            <button class="btn btn-cyan" onclick="closeP()">تسجيل الدخول</button>
-            <p onclick="closeP()" style="color:red; cursor:pointer; font-size:12px;">[ إغلاق ]</p>
-        </div>
-    </div>
-
-    <div id="dep-p" class="overlay">
-        <div class="popup">
-            <h2>إيداع المكتسبات</h2>
-            <p style="font-size:12px; color:#666">أدخل القيمة المراد إضافتها للقاعدة</p>
-            <input type="number" placeholder="0.00">
-            <button class="btn btn-cyan" onclick="closeP()">تأكيد الإيداع</button>
-            <p onclick="closeP()" style="color:red; cursor:pointer; font-size:12px;">[ إغلاق ]</p>
-        </div>
-    </div>
-
-    <div id="game-p" class="overlay">
-        <div class="popup" style="border-color:var(--gold)">
-            <h2 style="color:var(--gold)">مختبر الألعاب</h2>
-            <div style="background:rgba(255,255,0,0.05); border:1px solid var(--gold); padding:15px; border-radius:8px;">
-                <h4>LUDO BASE AI</h4>
-                <button class="btn btn-gold" style="font-size:12px" onclick="alert('جاري تشغيل محرك اللعبة...')">إبدأ اللعب</button>
-            </div>
-            <p onclick="closeP()" style="color:red; cursor:pointer; margin-top:20px;">[ إغلاق ]</p>
-        </div>
-    </div>
-
-    <div id="with-p" class="overlay">
-        <div class="popup" style="border-color:var(--pink)">
-            <h2 style="color:var(--pink)">سحب المكتسبات</h2>
-            <input type="number" placeholder="القيمة">
-            <button class="btn btn-pink" onclick="closeP()">تأفيذ طلب السحب</button>
-            <p onclick="closeP()" style="color:red; cursor:pointer; font-size:12px;">[ إغلاق ]</p>
-        </div>
-    </div>
-
     <script>
-        function openP(id) { closeP(); document.getElementById(id).style.display = 'block'; }
-        function closeP() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
+        const arena = document.getElementById('arena');
+        
+        // بيانات التوليد الذكي (AI Logic Pools)
+        const Names = ["أحمد", "عمر", "سالم", "فرج", "نور", "إياد", "مريم", "هناء"];
+        const Thoughts = ["جاري جمع المكتسبات...", "ذاهب للمحل التقني", "أفكر في تطوير المنظومة", "أبحث عن مركز ألعاب", "تحليل بيانات القاعدة", "تحديث كود الدخول"];
+        const Places = ["محل المدار", "مختبر لودو", "مركز زيرو", "شركة الإنماء", "سكن رقمي"];
 
-        const types = [
-            { n: "متجر القاعدة", t: "SHOP", c: "#00e5ff" },
-            { n: "منزل ذكي", t: "HOME", c: "#00ff44" },
-            { n: "مختبر ألعاب", t: "GAME", c: "#ffff00" },
-            { n: "مركز شركات", t: "OFFICE", c: "#ff00ea" }
-        ];
-
-        function autoBuild() {
-            const arena = document.getElementById('arena');
+        function generateNode() {
             const b = document.createElement('div');
-            const info = types[Math.floor(Math.random()*types.length)];
-            
+            const place = Places[Math.floor(Math.random()*Places.length)];
             b.className = 'building';
-            b.style.left = Math.random() * (window.innerWidth - 180) + 'px';
-            b.style.top = Math.random() * (window.innerHeight - 180) + 60 + 'px';
-            b.style.borderColor = info.c;
+            b.style.left = Math.random() * 80 + 'vw';
+            b.style.top = Math.random() * 80 + 10 + 'vh';
             
             b.innerHTML = `
-                <span class="b-name">${info.n}</span>
-                <span class="b-tag" style="background:${info.c}">ID_${Math.floor(Math.random()*99)}</span>
+                <span class="b-header">${place}</span>
+                <span class="b-status">حالة الوحدة: نشطة</span>
             `;
             
             arena.appendChild(b);
-            if(arena.childElementCount > 12) arena.removeChild(arena.firstChild);
+            if(arena.getElementsByClassName('building').length > 8) arena.removeChild(arena.getElementsByClassName('building')[0]);
+            document.getElementById('nodes-count').innerText = arena.getElementsByClassName('building').length;
         }
 
-        setInterval(autoBuild, 4000);
-        let s = 0; setInterval(() => { s++; document.getElementById('clock').innerText = s; }, 1000);
-        for(let i=0; i<4; i++) autoBuild();
+        function generateCitizen() {
+            const c = document.createElement('div');
+            const name = Names[Math.floor(Math.random()*Names.length)];
+            const thought = Thoughts[Math.floor(Math.random()*Thoughts.length)];
+            
+            c.className = 'citizen';
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.top = Math.random() * 100 + 'vh';
+            c.innerHTML = `<div class="thought-bubble"><b>${name}:</b> ${thought}</div>`;
+            
+            arena.appendChild(c);
+
+            // ذكاء الحركة والتفكير المتغير
+            setInterval(() => {
+                c.style.left = Math.random() * 95 + 'vw';
+                c.style.top = Math.random() * 95 + 'vh';
+                // تحديث التفكير
+                c.querySelector('.thought-bubble').innerHTML = `<b>${name}:</b> ${Thoughts[Math.floor(Math.random()*Thoughts.length)]}`;
+            }, 5000);
+
+            if(arena.getElementsByClassName('citizen').length > 6) arena.removeChild(arena.getElementsByClassName('citizen')[0]);
+        }
+
+        // تشغيل التوليد التلقائي
+        setInterval(generateNode, 6000);
+        setInterval(generateCitizen, 8000);
+
+        // البدء فوراً
+        for(let i=0; i<4; i++) { generateNode(); generateCitizen(); }
     </script>
 </body>
 </html>
