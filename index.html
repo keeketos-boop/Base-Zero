@@ -3,97 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Zero | AI Minds</title>
+    <title>Base Zero | AI Builders</title>
     <style>
-        :root { --main: #00e5ff; --text: #00ff44; --warn: #ffff00; }
-        body { margin: 0; background: #000; color: #fff; font-family: 'Courier New', monospace; overflow: hidden; }
-        #arena { position: fixed; width: 100vw; height: 100vh; z-index: -1; }
-
-        /* ستايل المربعات (المباني الذكية) */
+        :root { --main: #00e5ff; --pink: #ff00ea; --gold: #ffff00; --green: #00ff44; --road: rgba(0, 229, 255, 0.05); }
+        body { margin: 0; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        
+        /* الشوارع الرقمية */
+        #arena { 
+            position: fixed; width: 100vw; height: 100vh; z-index: -1; 
+            background-image: linear-gradient(var(--road) 1px, transparent 1px), linear-gradient(90deg, var(--road) 1px, transparent 1px);
+            background-size: 100px 100px; /* حجم الشارع */
+        }
+        
+        /* المباني اللي يبنوها الناس */
         .building { 
-            position: absolute; border: 1px solid var(--main); background: rgba(0,229,255,0.05); 
-            padding: 8px; border-radius: 4px; display: flex; flex-direction: column; 
-            box-shadow: 0 0 10px rgba(0,229,255,0.2); transition: 1.5s;
+            position: absolute; border: 1px solid var(--main); background: rgba(0,0,0,0.8); 
+            padding: 10px; border-radius: 4px; text-align: center; z-index: 10;
+            animation: appear 1s ease-out;
         }
-        .b-header { font-size: 12px; font-weight: bold; color: var(--main); border-bottom: 1px solid #222; margin-bottom: 5px; }
-        .b-status { font-size: 9px; color: #888; }
+        @keyframes appear { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
 
-        /* ستايل المواطنين (النقاط المفكرة) */
-        .citizen {
-            position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 8px #fff; transition: all 4s ease-in-out; z-index: 100;
+        /* الأشخاص (المهندسين) */
+        .builder {
+            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 10px #fff; transition: all 3s ease-in-out; z-index: 20;
         }
-        .thought-bubble { 
-            position: absolute; top: -25px; left: 10px; font-size: 9px; 
-            white-space: nowrap; color: var(--text); background: rgba(0,0,0,0.7);
-            padding: 2px 5px; border-left: 2px solid var(--text);
+        .thought {
+            position: absolute; top: -30px; right: 0; font-size: 10px; 
+            color: var(--gold); white-space: nowrap; background: rgba(0,0,0,0.8);
+            padding: 2px 8px; border: 1px solid var(--gold); border-radius: 4px;
         }
+
+        #nav { position: fixed; top: 0; width: 100%; padding: 12px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--main); display: flex; justify-content: space-between; z-index: 1000; box-sizing: border-box; }
+        #dock { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 1000; }
+        .btn { padding: 12px 20px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div style="position:fixed; top:0; width:100%; padding:10px; background:rgba(0,0,0,0.9); border-bottom:1px solid var(--main); z-index:1000; display:flex; justify-content:space-between; font-size:12px;">
-        <div>SYSTEM: <span id="nodes-count">0</span> UNITS ACTIVE</div>
-        <div style="letter-spacing:3px;">BASE ZERO GENESIS</div>
-        <div id="ai-load">AI PROCESSING...</div>
+    <div id="nav">
+        <div style="color:var(--main); font-weight:bold;">[ 🛠️ وضع البناء الحي ]</div>
+        <div style="letter-spacing:4px; font-weight:900;">BASE ZERO</div>
+        <div style="font-size:10px; color:var(--green);">PEOPLE_ARE_BUILDING...</div>
     </div>
 
     <div id="arena"></div>
 
+    <div id="dock">
+        <button class="btn" style="background:var(--main); color:#000;">إيداع</button>
+        <button class="btn" style="background:var(--gold); color:#000;">ألعاب</button>
+        <button class="btn" style="background:var(--pink); color:#fff;">سحب</button>
+    </div>
+
     <script>
         const arena = document.getElementById('arena');
-        
-        // بيانات التوليد الذكي (AI Logic Pools)
-        const Names = ["أحمد", "عمر", "سالم", "فرج", "نور", "إياد", "مريم", "هناء"];
-        const Thoughts = ["جاري جمع المكتسبات...", "ذاهب للمحل التقني", "أفكر في تطوير المنظومة", "أبحث عن مركز ألعاب", "تحليل بيانات القاعدة", "تحديث كود الدخول"];
-        const Places = ["محل المدار", "مختبر لودو", "مركز زيرو", "شركة الإنماء", "سكن رقمي"];
+        const names = ["سارة", "محمد", "أحمد", "نور", "فرج"];
+        const buildingTypes = [
+            {n: "محل تجاري", c: "#00e5ff"},
+            {n: "منزل ذكي", c: "#00ff44"},
+            {n: "مختبر ألعاب", c: "#ffff00"},
+            {n: "شارع رئيسي", c: "#ff00ea"}
+        ];
 
-        function generateNode() {
+        function createBuilder() {
             const b = document.createElement('div');
-            const place = Places[Math.floor(Math.random()*Places.length)];
-            b.className = 'building';
-            b.style.left = Math.random() * 80 + 'vw';
+            b.className = 'builder';
+            const name = names[Math.floor(Math.random()*names.length)];
+            b.style.left = Math.random() * 90 + 'vw';
             b.style.top = Math.random() * 80 + 10 + 'vh';
-            
-            b.innerHTML = `
-                <span class="b-header">${place}</span>
-                <span class="b-status">حالة الوحدة: نشطة</span>
-            `;
-            
+            b.innerHTML = `<div class="thought">${name}: بنفكر وين نبني...</div>`;
             arena.appendChild(b);
-            if(arena.getElementsByClassName('building').length > 8) arena.removeChild(arena.getElementsByClassName('building')[0]);
-            document.getElementById('nodes-count').innerText = arena.getElementsByClassName('building').length;
-        }
 
-        function generateCitizen() {
-            const c = document.createElement('div');
-            const name = Names[Math.floor(Math.random()*Names.length)];
-            const thought = Thoughts[Math.floor(Math.random()*Thoughts.length)];
-            
-            c.className = 'citizen';
-            c.style.left = Math.random() * 100 + 'vw';
-            c.style.top = Math.random() * 100 + 'vh';
-            c.innerHTML = `<div class="thought-bubble"><b>${name}:</b> ${thought}</div>`;
-            
-            arena.appendChild(c);
-
-            // ذكاء الحركة والتفكير المتغير
+            // دورة حياة البناء
             setInterval(() => {
-                c.style.left = Math.random() * 95 + 'vw';
-                c.style.top = Math.random() * 95 + 'vh';
-                // تحديث التفكير
-                c.querySelector('.thought-bubble').innerHTML = `<b>${name}:</b> ${Thoughts[Math.floor(Math.random()*Thoughts.length)]}`;
-            }, 5000);
+                const x = Math.random() * 85 + 'vw';
+                const y = Math.random() * 75 + 10 + 'vh';
+                b.style.left = x;
+                b.style.top = y;
 
-            if(arena.getElementsByClassName('citizen').length > 6) arena.removeChild(arena.getElementsByClassName('citizen')[0]);
+                // بعد الحركة، يقرر يبني
+                setTimeout(() => {
+                    const type = buildingTypes[Math.floor(Math.random()*buildingTypes.length)];
+                    b.querySelector('.thought').innerHTML = `${name}: بنبني ${type.n} هنا!`;
+                    b.querySelector('.thought').style.color = type.c;
+                    
+                    // توليد المبنى في مكان الشخص
+                    spawnBuilding(x, y, type);
+                }, 3000);
+            }, 6000);
         }
 
-        // تشغيل التوليد التلقائي
-        setInterval(generateNode, 6000);
-        setInterval(generateCitizen, 8000);
+        function spawnBuilding(x, y, type) {
+            const bl = document.createElement('div');
+            bl.className = 'building';
+            bl.style.left = x;
+            bl.style.top = y;
+            bl.style.borderColor = type.c;
+            bl.innerHTML = `<span style="color:${type.c}; font-size:11px; font-weight:bold;">${type.n}</span><br><small style="font-size:8px">تم البناء بواسطة الذكاء</small>`;
+            arena.appendChild(bl);
 
-        // البدء فوراً
-        for(let i=0; i<4; i++) { generateNode(); generateCitizen(); }
+            // مسح المباني القديمة عشان الزحمة
+            if(arena.getElementsByClassName('building').length > 12) {
+                arena.removeChild(arena.getElementsByClassName('building')[0]);
+            }
+        }
+
+        // إطلاق المهندسين (النقاط)
+        for(let i=0; i<4; i++) {
+            createBuilder();
+        }
     </script>
 </body>
 </html>
